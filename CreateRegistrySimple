@@ -1,0 +1,26 @@
+# Crear el registry
+podman pull docker.io/library/registry
+podman run -d --name registry1 -p 5000:5000 docker.io/library/registry
+
+# Comprobar el registry, no hay imagenes
+curl -X GET http://localhost:5000/v2/_catalog
+
+# Agregar el registry inseguro
+sudo vim /etc/containers/registries.conf
+[registries.insecure]
+registries = ['localhost:5000']
+
+# Crear el tag con el FQDN del registry
+podman tag 6a40a7b2038e localhost:5000/rhel8/httpd-24:latest
+           ------------ ------------------------------------
+            IMAGE ID      NUEVO TAG DE LA IMAGEN CON EL 
+             ORIGEN           FQDN DEL REGISTRY
+
+# Subir la imagen
+podman push localhost:5000/rhel8/httpd-24:latest
+
+# Validar nuevamente el registry
+curl -X GET http://localhost:5000/v2/_catalog
+{"repositories":["rhel8/httpd-24"]}
+
+
