@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: quay.io/redhattraining/mariadb:10.5
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3306
+        resources: {}
+        envFrom:
+        - configMapRef:
+            name: mariadb
+        - secretRef:
+            name: mariadb
+        volumeMounts:
+        - name: mariadb-volume
+          mountPath: "/var/lib/mysql"
+      volumes:
+      - name: mariadb-volume
+        persistentVolumeClaim:
+          claimName: mariadb 
+      securityContext: {}
+      serviceAccount: mariadb
+      serviceAccountName: mariadb
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb
+spec:
+  type: ClusterIP
+  selector:
+    app: mariadb
+  ports:
+  - name: mariadb
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+status:
+  loadBalancer: {}

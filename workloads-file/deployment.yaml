@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: image-tool-pvc
+  name: image-tool-pvc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-tool-pvc
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: image-tool-pvc
+    spec:
+      containers:
+      - name: image-tool-pvc
+        image: quay.io/redhattraining/image-tool:latest
+        ports:
+        - containerPort: 5000
+        resources: {}
+        volumeMounts:
+        - name: image-tool-storage
+          mountPath: /var/storage
+      volumes:
+      - name: image-tool-storage
+        persistentVolumeClaim:
+          claimName: image-tool
+      securityContext: {}
+      serviceAccount: image-tool
+      serviceAccountName: image-tool

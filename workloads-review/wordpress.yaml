@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: wordpress
+  name: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: quay.io/redhattraining/wordpress:5.7-php7.4-apache
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources: {}
+        envFrom:
+        - configMapRef:
+            name: wordpress
+        - secretRef:
+            name: wordpress
+        volumeMounts:
+        - name: wordpress-volume
+          mountPath: "/var/www/html"
+      volumes:
+      - name: wordpress-volume
+        persistentVolumeClaim:
+          claimName: wordpress 
+      securityContext: {}
+      serviceAccount: wordpress
+      serviceAccountName: wordpress
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: wordpress
+  name: wordpress
+spec:
+  type: LoadBalancer
+  selector:
+    app: wordpress
+  ports:
+  - name: wordpress
+    port: 80
+    protocol: TCP
+    targetPort: 80
+status:
+  loadBalancer: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: wordpress
+  name: wordpress
+spec:
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: wordpress
+    weight: null

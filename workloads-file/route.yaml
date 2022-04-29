@@ -1,0 +1,14 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: image-tool-pvc
+  name: image-tool-pvc
+spec:
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: image-tool-pvc
+    weight: null

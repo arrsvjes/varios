@@ -1,0 +1,89 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: famous-quotes
+  name: famous-quotes
+  namespace: workloads-block
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: famous-quotes
+      deployment: famous-quotes
+  template:
+    metadata:
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+      creationTimestamp: null
+      labels:
+        app: famous-quotes
+        deployment: famous-quotes
+    spec:
+      containers:
+      - env:
+        - name: QUOTES_DATABASE
+          value: quotes
+        - name: QUOTES_HOSTNAME
+          value: famous-quotes-db
+        - name: QUOTES_USER
+          value: myuser
+        - name: QUOTES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: famous-quotes-db
+        image: quay.io/redhattraining/famous-quotes:2.1
+        imagePullPolicy: IfNotPresent
+        name: famous-quotes
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  labels:
+    app: famous-quotes
+  name: famous-quotes
+  namespace: workloads-block
+spec:
+  ports:
+  - name: 8000-tcp
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: famous-quotes
+    deployment: famous-quotes
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: famous-quotes
+  name: famous-quotes
+  namespace: workloads-block
+spec:
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: famous-quotes
+    weight: null
