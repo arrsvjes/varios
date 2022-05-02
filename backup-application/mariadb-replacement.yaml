@@ -1,0 +1,116 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-new
+  namespace: backup-application
+data:
+  MYSQL_DATABASE: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-new
+  namespace: backup-application
+stringData:
+  MYSQL_USER: exampleuser
+  MYSQL_PASSWORD: examplepass
+  MYSQL_ROOT_PASSWORD: mariadb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-new
+  namespace: backup-application
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ocs-storagecluster-ceph-rbd
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-new
+  namespace: backup-application
+  labels:
+    app: mariadb-new
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb-new
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mariadb-new
+    spec:
+      containers:
+      - name: mariadb-new
+        image: mariadb:10.5
+        workingDir: /home/user
+        resources: {}
+        ports:
+        - name: mariadb
+          containerPort: 3306
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - 'mysql -v -b -u "root" -p"${MYSQL_ROOT_PASSWORD}" "mysql" -e "SHOW STATUS ;"'
+        readinessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 2
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - 'mysql -v -b -u "${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -e "SHOW TABLES ;"'
+        env:
+        - name: HOME
+          value: /home/user
+        envFrom:
+        - configMapRef:
+            name: mariadb-new
+        - secretRef:
+            name: mariadb-new
+        volumeMounts:
+        - name: mariadb
+          mountPath: "/var/lib/mysql"
+        - name: home-dir
+          mountPath: /home/user
+      volumes:
+      - name: mariadb
+        persistentVolumeClaim:
+          claimName: mariadb-new
+      - name: home-dir
+        emptyDir: {}
+      securityContext: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-new
+  namespace: backup-application
+  labels:
+    app: mariadb-new
+spec:
+  ports:
+  - name: mariadb
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: mariadb-new
+  type: LoadBalancer
+status:
+  loadBalancer: {}

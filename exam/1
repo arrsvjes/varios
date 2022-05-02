@@ -1,0 +1,12 @@
+INSTALAR ODF
+===============================================================================
+
+PAra conformar el cluster usar los nodos worker1, worker2 y worker3. 
+Utilizar un disco de cada server. Se llevara a cabo la implementacion interna
+con dispositivos directamente conectados.
+
+1. Instalar el operador LSO
+  a) Configurar un LocalVolumeDiscovery
+  b) Crear un localvolumeset llamado lso-volumeset
+2. Instalar el operador OCS
+  a) Crear el storagecluster utilizando el lso-volumeset

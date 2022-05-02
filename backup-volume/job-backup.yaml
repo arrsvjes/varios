@@ -1,0 +1,69 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-backup
+  namespace: backup-volume
+  labels:
+    app: postgresql-backup
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql-backup
+    spec:
+      containers:
+      - name: postgresql-backup
+        image: postgres:10
+        # workingDir: /var/lib/postgresql
+        resources: {}
+        command:
+        - /bin/bash
+        - -vc
+        - 'psql -U ${POSTGRES_USER} -w -d ${POSTGRES_DB} < /opt/prepare-backup.sql'
+        env:
+        # - name: HOME
+        #   value: /var/lib/postgresql
+        - name: PAGER
+          value: cat
+        - name: PGHOST
+          value: postgresql
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql
+              key: POSTGRES_DB
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: postgresql
+        - secretRef:
+            name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql
+        - name: prepare-backup
+          mountPath: /opt
+        - name: postgresql-wal
+          mountPath: /mnt
+      volumes:
+      - name: postgresql-data
+        emptyDir: {}
+      - name: prepare-backup
+        configMap:
+          name: prepare-backup
+          defaultMode: 0444
+      - name: postgresql-wal
+        persistentVolumeClaim:
+          claimName: postgresql-wal
+      restartPolicy: Never

@@ -1,0 +1,48 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mariadb-backup
+  namespace: backup-application
+  labels:
+    app: mariadb-backup
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: mariadb-backup
+    spec:
+      containers:
+      - name: mariadb-backup
+        image: mariadb:10.5
+        resources: {}
+        workingDir: /home/user
+        command:
+        - /bin/bash
+        - -vc
+        - 'mysqldump -v -h "${MYSQL_HOST}" -P "${MYSQL_PORT}" -u "root" -p"${MYSQL_ROOT_PASSWORD}" --databases "${MYSQL_DATABASE}" > backup.sql'
+        env:
+        - name: HOME
+          value: /home/user
+        - name: MYSQL_HOST
+          value: mariadb.backup-application
+        - name: MYSQL_PORT
+          value: "3306"
+        envFrom:
+        - configMapRef:
+            name: mariadb
+        - secretRef:
+            name: mariadb
+        volumeMounts:
+        - name: mariadb
+          mountPath: "/var/lib/mysql"
+        - mountPath: /home/user
+          name: home-dir
+      volumes:
+      - name: mariadb
+        emptyDir: {}
+      - name: home-dir
+        persistentVolumeClaim:
+          claimName: pvc-backup
+      restartPolicy: Never

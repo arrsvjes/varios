@@ -15,4 +15,6 @@ spec:
     - storageClassName: localblock
       volumeMode: Block
       devicePaths:
-        - /dev/disk/by-id/virtio-f9790c3f-d2e8-466f-b 
+        - CHANGE ME
+        - CHANGE ME
+        - CHANGE ME
