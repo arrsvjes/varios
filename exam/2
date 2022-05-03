@@ -1,5 +1,9 @@
 Extender la capacidad del cluster
 ===============================================================================
 
+(lab start capacity-disk)
+
+* Revisar la capacidad del cluster
+
 1. Usar los discos adicionales que se encuentran en cada worker para expadir la
   capacidad de almacenamiento del cluster
