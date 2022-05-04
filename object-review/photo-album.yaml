@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: photo-album
+  namespace: bucket-review
+  labels:
+    app: photo-album
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: photo-album
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: photo-album
+    spec:
+      securityContext: {}
+      containers:
+      - name: photo-album
+        image: quay.io/redhattraining/photo-album
+        imagePullPolicy: Always
+        ports:
+        - name: flask
+          protocol: TCP
+          containerPort: 5000
+        resources: {}
+        envFrom:
+        - configMapRef:
+            name: CHANGE_ME
+        - secretRef:
+            name: CHANGE_ME
+        volumeMounts:
+        - name: upload-folder
+          mountPath: "/tmp"
+      volumes:
+      - name: upload-folder
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: photo-album
+  namespace: bucket-review
+  labels:
+    app: photo-album
+spec:
+  ports:
+  - name: photo-album
+    port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: photo-album
+  type: LoadBalancer
+status:
+  loadBalancer: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: photo-album
+  namespace: bucket-review
+  labels:
+    app: photo-album
+spec:
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: photo-album
+    weight: null

@@ -1,0 +1,11 @@
+---
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: CHANGE_ME
+  namespace: bucket-review
+  labels:
+    app: photo-album
+spec:
+  generateBucketName: CHANGE_ME
+  storageClassName: CHANGE_ME

@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-app
+  namespace: bucket-review
+  labels:
+    app: awscli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: awscli
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: awscli
+    spec:
+      initContainers:
+      - name: init
+        image: amazon/aws-cli:2.2.5
+        command:
+        - /opt/init.sh
+        env:
+        - name: AWS_CA_BUNDLE
+          value: /run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        - name: PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: settings
+              key: PREFIX
+        envFrom:
+        - configMapRef:
+            name: CHANGE_ME
+        - secretRef:
+            name: CHANGE_ME
+        resources: {}
+        volumeMounts:
+        - name: init
+          mountPath: /opt
+          subpath: init.sh
+      containers:
+      - name: awscli
+        image: amazon/aws-cli:2.2.5
+        command:
+        - /opt/entrypoint.sh
+        env:
+        - name: AWS_CA_BUNDLE
+          value: /run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        envFrom:
+        - configMapRef:
+            name: settings
+        - configMapRef:
+            name: CHANGE_ME
+        - secretRef:
+            name: CHANGE_ME
+        resources: {}
+        volumeMounts:
+        - name: entrypoint
+          mountPath: /opt
+          subpath: entrypoint.sh
+      volumes:
+      - name: init
+        configMap:
+          name: init
+          defaultMode: 0555
+      - name: entrypoint
+        configMap:
+          name: entrypoint
+          defaultMode: 0555
+status: {}
