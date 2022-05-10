@@ -1,0 +1,4 @@
+Configurar el servicio de metricas
+
+Usar una PVC para las metricas llamada storage_metrics y elertmanager otro pvc 
+llamado storage_alertmanager

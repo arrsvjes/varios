@@ -1,0 +1,13 @@
+
+Configurar registry
+===============================================================================
+
+(lab start services-review)
+
+
+configurar el registry interno para que use storage S3. crear una OBC con el nombre noobaa-registry
+
+
+
+
+

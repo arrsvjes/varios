@@ -1,0 +1,7 @@
+Crear una quota en un proyecto llamado retail
+
+2 pvc maximo
+5 gb espacio total PVC
+
+2 PVC de la clase gaia
+2 GB ede espacio tal en la clase GAIA

@@ -1,0 +1,8 @@
+Crear un storageclass llamado gaia basado en la clase
+rbd,
+
+features:
+
+ -
+ -
+ - Policy Retain
