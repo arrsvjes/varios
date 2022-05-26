@@ -1,1 +1,15 @@
 Configurar diversos permisos locales a 2 usuarios sobre dos proyetos diferentes
+
+admin redhat
+peter guymanhappy
+roger guymanhappy
+
+1. Roger es admin del proyecto wakanda.
+2. Peter solo puede agregar recursos en el proyecto wakanda, pero no puede asignarle roles a otros developers.
+3. Roger solo tiene acceso de lectura al proyecto newyork
+4. Configurar para que el proyecto wakanda sea monitoreado
+
+
+
+oc new-project wakanda
+oc new-project newyork

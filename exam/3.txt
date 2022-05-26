@@ -8,6 +8,9 @@ Configurar registry
 configurar el registry interno para que use storage S3. crear una OBC con el nombre noobaa-registry
 
 
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.7/pdf/registry/registry-english.pdf
+
+
 
 
 
