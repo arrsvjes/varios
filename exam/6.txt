@@ -1,1 +1,22 @@
-Configurar un limite a un proyecto llamado avventure 16GI / 10GI para PVC
+Configurar ResourceQuota
+========================
+Configurar una quota de recursos para el proyecto wakanda conforme a los
+   siguientes parametros:
+ * Nombre la quota: storagequota
+ * La suma de solicitud de los PVC en total (todas las clases) no puede exceder 
+   los 5G
+ * La cantidad total de PVC de cualquier clase sera maximo de 5.
+ * La suma de solicitudes de los PVC de la clase gaia sera de 3G.
+ * La cantidad maxima de PVC de la clase gaia es de 2.
+
+
+Configurar Limits
+=================
+
+Configurar LimitRange
+ * Nombre del limite ex370
+ * Aplicar el limitRange al proyecto newyork
+ * Tamaño minimo de PVC de 200Mi
+ * Tamaño maximo de PVC de 2Gi
+
+

@@ -1,8 +1,9 @@
-Crear un storageclass llamado gaia basado en la clase
-rbd,
+Crear storageclass
+==================
+
+Crear un storageclass llamado gaia basado en el aprovisionador
+openshift-storage.cephfs.csi.ceph.com
 
 features:
 
- -
- -
- - Policy Retain
+ - Crear el PV hasta que el pod demande el storage

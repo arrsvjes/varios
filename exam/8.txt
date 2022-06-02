@@ -1,0 +1,12 @@
+1 Crear un secreto llamado mysql-ex370 que contenga las variables: USER=carter PASSWORD=qwerty123 DATABASE=royal en el proyecto trafk
+2 Crear un PVC  llamado mysql-data con el storageclass gaia de 5GB 
+
+2 Inyectar las variables del secreto al pod de mysql como variables de entorno
+
+2 Utilizar el template mysql-ephemeral para crear una BD7
+
+3 Asignar el PVC al deployment en el directorio /var/lib/mysql/data
+
+
+
+
