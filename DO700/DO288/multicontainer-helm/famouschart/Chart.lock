@@ -1,0 +1,6 @@
+dependencies:
+- name: mariadb
+  repository: https://krakazyabra.github.io/microservices
+  version: 1.0.5
+digest: sha256:b19fdd85495f7a88b17de3e59a00929bf6c00a36f9dcac0a6e74407c84245e18
+generated: "2022-06-06T09:47:33.820505309-04:00"
