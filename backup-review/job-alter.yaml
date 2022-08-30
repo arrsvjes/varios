@@ -1,0 +1,109 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-alter
+  namespace: backup-review
+  labels:
+    app: postgresql-alter
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: postgresql-alter
+    spec:
+      containers:
+      - name: postgresql-alter
+        image: quay.io/redhattraining/postgres:10
+        resources: {}
+        workingDir: /mnt
+        command:
+        - /bin/bash
+        - -vc
+        - 'psql --echo-queries -h ${PGHOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} < /opt/alter.sql'
+        env:
+        - name: PGHOST
+          value: CHANGE_ME
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql
+              key: POSTGRES_DB
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: postgresql
+        - secretRef:
+            name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql
+        - name: sql-alter
+          mountPath: /opt
+      volumes:
+      - name: postgresql-data
+        emptyDir: {}
+      - name: sql-alter
+        configMap:
+          name: sql-alter
+          defaultMode: 0555
+      restartPolicy: Never
+      securityContext: {}
+      serviceAccount: postgresql
+      serviceAccountName: postgresql
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sql-alter
+  namespace: backup-review
+  labels:
+    app: postgresql-alter
+data:
+  alter.sql: |
+    -- SELECT pg_catalog.setval('public.city_id_seq', MAX(id)) FROM city;
+    -- SELECT pg_catalog.setval('public.country_id_seq', MAX(id)) FROM country;
+    -- SELECT pg_catalog.setval('public.editions_id_seq', MAX(id)) FROM editions;
+    -- SELECT pg_catalog.setval('public.season_id_seq', MAX(id)) FROM season;
+
+    ALTER TABLE editions ADD COLUMN notes VARCHAR;
+    INSERT INTO editions(year, season, country, city, notes)
+    VALUES (2020, 1, 12, 41, 'Postponed to the following year');
+
+    DROP VIEW latest ;
+    DROP VIEW olympics;
+
+    CREATE VIEW olympics AS
+     SELECT e.year,
+        s.name AS season,
+        c.name AS country,
+        t.name AS city,
+        e.notes AS notes
+       FROM editions e,
+        season s,
+        country c,
+        city t
+      WHERE ((e.season = s.id) AND (e.country = c.id) AND (e.city = t.id))
+      ORDER BY e.id;
+
+    CREATE VIEW latest AS
+     SELECT olympics.year,
+        olympics.season,
+        olympics.country,
+        olympics.city,
+        olympics.notes
+       FROM public.olympics
+      WHERE (olympics.year IN ( SELECT recent.year FROM recent))
+      ORDER BY olympics.year;
+
+    SELECT * FROM latest ;

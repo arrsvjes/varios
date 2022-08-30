@@ -1,0 +1,64 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-backup
+  namespace: backup-review
+  labels:
+    app: postgresql-backup
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: postgresql-backup
+    spec:
+      containers:
+      - name: postgresql-backup
+        image: quay.io/redhattraining/postgres:10
+        resources: {}
+        workingDir: /mnt
+        command:
+        - /bin/bash
+        - -vc
+        - 'pg_dump -h ${PGHOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} > /mnt/database.sql ; ls -l /mnt/database.sql'
+        env:
+        - name: PAGER
+          value: cat
+        - name: PGHOST
+          value: postgresql
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql
+              key: POSTGRES_DB
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: postgresql
+        - secretRef:
+            name: postgresql
+        volumeMounts:
+        - name: postgresql-backup
+          mountPath: CHANGE_ME
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql
+      volumes:
+      - name: postgresql-backup
+        persistentVolumeClaim:
+          claimName: CHANGE_ME
+      - name: postgresql-data
+        emptyDir: {}
+      restartPolicy: Never
+      securityContext: {}
+      serviceAccount: postgresql
+      serviceAccountName: postgresql

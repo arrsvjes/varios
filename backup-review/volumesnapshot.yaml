@@ -1,0 +1,12 @@
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: CHANGE_ME
+  namespace: backup-review
+  labels:
+    app: postgresql-data-snapshot
+spec:
+  volumeSnapshotClassName: CHANGE_ME
+  source:
+    persistentVolumeClaimName: CHANGE_ME

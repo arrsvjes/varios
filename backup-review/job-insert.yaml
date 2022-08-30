@@ -1,0 +1,79 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-insert
+  namespace: backup-review
+  labels:
+    app: postgresql-insert
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: postgresql-insert
+    spec:
+      containers:
+      - name: postgresql-insert
+        image: quay.io/redhattraining/postgres:10
+        resources: {}
+        workingDir: /mnt
+        command:
+        - /bin/bash
+        - -vc
+        - 'psql --echo-queries -h ${PGHOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} < /opt/insert.sql'
+        env:
+        - name: PGHOST
+          value: CHANGE_ME
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql
+              key: POSTGRES_DB
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: postgresql
+        - secretRef:
+            name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql
+        - name: sql-insert
+          mountPath: /opt
+      volumes:
+      - name: postgresql-data
+        emptyDir: {}
+      - name: sql-insert
+        configMap:
+          name: sql-insert
+          defaultMode: 0555
+      restartPolicy: Never
+      securityContext: {}
+      serviceAccount: postgresql
+      serviceAccountName: postgresql
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sql-insert
+  namespace: backup-review
+  labels:
+    app: postgresql-insert
+data:
+  insert.sql: |
+    INSERT INTO editions(year, season, country, city, notes)
+    VALUES
+    (2022, 2,  6,  7, 'Future edition'),
+    (2024, 1,  8, 27, 'Future edition');
+
+    SELECT * FROM latest ;

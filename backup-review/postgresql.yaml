@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: backup-review
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgres
+        image: quay.io/redhattraining/postgres:10
+        resources: {}
+        ports:
+        - name: postgresql
+          containerPort: 5432
+        livenessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - 'psql -a -U ${POSTGRES_USER} -w -d ${POSTGRES_DB} -l'
+        readinessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 2
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - 'psql -a -U ${POSTGRES_USER} -w -d ${POSTGRES_DB} -c "SELECT * FROM season ;"'
+        env:
+        - name: PAGER
+          value: cat
+        - name: PGHOST
+          value: localhost
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: postgresql
+              key: POSTGRES_DB
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_USER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: postgresql
+        - secretRef:
+            name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: CHANGE_ME
+        - name: init-data
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: postgresql-data
+        persistentVolumeClaim:
+          claimName: CHANGE_ME
+      - name: init-data
+        configMap:
+          name: init-data
+          defaultMode: 0555
+      securityContext: {}
+      serviceAccount: postgresql
+      serviceAccountName: postgresql
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: backup-review
+  labels:
+    app: postgresql
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: postgresql
+  type: ClusterIP
