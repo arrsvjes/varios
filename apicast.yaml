@@ -1,0 +1,16 @@
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIcast
+metadata:
+  name: custom-apicast
+spec:
+  adminPortalCredentialsRef:
+    name: apicast-secret
+  deploymentEnvironment: staging
+  exposedHost:
+    host: custom-apicast.apps.ocp4.example.com
+    tls:
+    - {}
+  resources:
+    limits:
+      cpu: '0'
+      memory: 128Mi
