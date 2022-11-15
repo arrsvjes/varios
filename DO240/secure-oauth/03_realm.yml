@@ -1,0 +1,15 @@
+kind: KeycloakRealm
+apiVersion: keycloak.org/v1alpha1
+metadata:
+  name: do240-keycloakrealm
+  labels:
+    realm: do240
+spec:
+  realm:
+    id: do240
+    realm: do240
+    enabled: true
+    displayName: do240
+  instanceSelector:
+    matchLabels:
+      app: sso

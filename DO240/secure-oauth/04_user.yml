@@ -1,0 +1,24 @@
+kind: KeycloakUser
+apiVersion: keycloak.org/v1alpha1
+metadata:
+  name: student-user
+  labels:
+    app: sso
+spec:
+  user:
+    username: student
+    firstName: gls
+    lastName: student
+    email: student@example.com
+    enabled: true
+    emailVerified: true
+    realmRoles:
+      - offline_access
+      - uma_authorization
+      - default-roles-do240
+    credentials:
+    - type: password
+      value: redhat
+  realmSelector:
+    matchLabels:
+      realm: do240
