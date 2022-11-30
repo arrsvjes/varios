@@ -1,0 +1,9 @@
+data:
+  sidekiq_schedule.yml: |
+    billing_jobs:
+      cron: '* * * * *'
+      class: CronJob::Enqueuer
+      args: ['BILLING']
+      description: "Billing canaries and the rest"
+      queue: critical
+      status: enabled

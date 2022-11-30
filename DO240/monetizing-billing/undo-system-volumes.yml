@@ -1,0 +1,14 @@
+spec:
+  template:
+    spec:
+      volumes:
+        - configMap:
+            items:
+            - key: zync.yml
+              path: zync.yml
+            - key: rolling_updates.yml
+              path: rolling_updates.yml
+            - key: service_discovery.yml
+              path: service_discovery.yml
+            name: system
+          name: system-config
